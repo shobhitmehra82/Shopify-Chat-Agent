@@ -1,0 +1,21 @@
+{
+  "name": "shopify-chat-agent",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "probe": "node scripts/probe-ucp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "End-to-end Shopify UCP/MCP chat agent",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}

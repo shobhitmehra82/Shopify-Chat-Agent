@@ -1,0 +1,684 @@
+.cw {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* Launcher */
+
+.cw__launcher {
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-launcher);
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.cw__launcher:hover {
+  filter: brightness(1.08);
+}
+
+.cw__launcher:active {
+  transform: scale(0.95);
+}
+
+/* Panel */
+
+.cw__panel {
+  width: min(384px, calc(100vw - 40px));
+  height: min(600px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+  animation: cw-rise 160ms ease-out;
+}
+
+@keyframes cw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Header */
+
+.cw__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cw__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cw__avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  font-weight: 650;
+}
+
+.cw__identity-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cw__store {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cw__status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cw__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.cw__status-dot--ok {
+  background: #21a366;
+}
+
+.cw__status-dot--error {
+  background: #d93025;
+}
+
+.cw__header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.cw__icon-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.cw__icon-btn:hover {
+  background: var(--bubble-assistant);
+  color: var(--text);
+}
+
+/* Messages */
+
+.cw__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The log scrolls, so nothing in it may be compressed to fit. A flex item with
+   `overflow: hidden` (the cart card) has an automatic minimum size of 0 and
+   would otherwise collapse to its borders once the log overflows. */
+.cw__messages > * {
+  flex-shrink: 0;
+}
+
+.cw__row {
+  display: flex;
+}
+
+.cw__row--user {
+  justify-content: flex-end;
+}
+
+.cw__row--assistant {
+  justify-content: flex-start;
+}
+
+.cw__bubble {
+  max-width: 82%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cw__bubble--user {
+  background: var(--bubble-user);
+  color: #fff;
+  border-bottom-right-radius: 5px;
+}
+
+.cw__bubble--assistant {
+  background: var(--bubble-assistant);
+  color: var(--text);
+  border-bottom-left-radius: 5px;
+}
+
+.cw__system-note {
+  margin: 2px 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Empty state */
+
+.cw__empty {
+  margin: auto 0;
+  text-align: center;
+  padding: 8px 4px;
+}
+
+.cw__empty-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.cw__empty-body {
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.cw__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cw__suggestion {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.cw__suggestion:hover {
+  background: var(--bubble-assistant);
+}
+
+/* Product results */
+
+.cw-results {
+  position: relative;
+  margin: 2px 0 6px;
+}
+
+.cw-results__track {
+  display: flex;
+  gap: 8px;
+}
+
+.cw-results--carousel .cw-results__track {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.cw-results--carousel .cw-card {
+  flex: 0 0 148px;
+  scroll-snap-align: start;
+}
+
+.cw-results--list .cw-results__track {
+  flex-direction: column;
+}
+
+.cw-results--list .cw-card {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.cw-results--list .cw-card__media {
+  width: 76px;
+  flex-shrink: 0;
+  aspect-ratio: auto;
+  align-self: stretch;
+}
+
+.cw-results__nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.cw-results__arrow {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cw-results__arrow:hover {
+  color: var(--text);
+  background: var(--bubble-assistant);
+}
+
+/* Product card */
+
+.cw-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.cw-card__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--bubble-assistant);
+  overflow: hidden;
+  /* Flex items get min-height:auto, so an in-flow image taller than the ratio
+     box stretches it. Keep the box on its ratio and take the image out of flow. */
+  flex: none;
+  min-height: 0;
+}
+
+.cw-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Catalogue shots are full-body on a seamless backdrop — a centre crop lands
+     on empty floor. The garment is at the top of the frame. */
+  object-position: top center;
+  display: block;
+}
+
+.cw-card__media-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.cw-card__badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.cw-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  min-width: 0;
+}
+
+.cw-card__title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cw-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cw-card__title a:hover {
+  text-decoration: underline;
+}
+
+.cw-card__price {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.cw-card__price-range {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.cw-card__variants {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.cw-card__add {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cw-card__add:disabled {
+  background: var(--bubble-assistant);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Cart card */
+
+.cw-cart {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  margin: 2px 0 6px;
+}
+
+.cw-cart--empty {
+  padding: 14px;
+  text-align: center;
+}
+
+.cw-cart__empty-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.cw-cart__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cw-cart__title {
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.cw-cart__count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cw-cart__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cw-cart__line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cw-cart__thumb {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bubble-assistant);
+}
+
+.cw-cart__thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.cw-cart__thumb-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.cw-cart__line-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cw-cart__line-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cw-cart__line-meta {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cw-cart__line-total {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cw-cart__totals {
+  margin: 0;
+  padding: 9px 11px;
+}
+
+.cw-cart__total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.cw-cart__total-row + .cw-cart__total-row {
+  margin-top: 4px;
+}
+
+.cw-cart__total-row dt,
+.cw-cart__total-row dd {
+  margin: 0;
+}
+
+.cw-cart__total-row--grand {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 650;
+}
+
+.cw-cart__checkout {
+  display: block;
+  margin: 0 11px 11px;
+  padding: 9px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.cw-cart__checkout:hover {
+  filter: brightness(1.08);
+}
+
+/* Typing indicator */
+
+.cw__typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 13px;
+}
+
+.cw__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: cw-bounce 1.2s infinite ease-in-out;
+}
+
+.cw__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.cw__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes cw-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* Composer */
+
+.cw__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.cw__input {
+  flex: 1;
+  max-height: 120px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  resize: none;
+}
+
+.cw__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.cw__send {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.cw__send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Utilities */
+
+.cw__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cw__panel,
+  .cw__dot,
+  .cw__launcher {
+    animation: none;
+    transition: none;
+  }
+}
