@@ -20,6 +20,8 @@ healthRouter.get('/health', (req, res) => {
 healthRouter.get('/config', (req, res) => {
   res.json({
     display: catalogConfig.display,
+    voice: catalogConfig.voice,
+    orders: catalogConfig.orders,
     search: {
       sort: catalogConfig.search.sort,
       availableOnly: catalogConfig.search.availableOnly,

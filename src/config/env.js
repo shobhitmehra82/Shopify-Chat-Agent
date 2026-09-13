@@ -34,6 +34,33 @@ export const env = {
 
   ucpTimeoutMs: Number(process.env.UCP_TIMEOUT_MS || 20000),
 
+  /**
+   * Customer sign-in (Shopify new customer accounts, passwordless email OTP).
+   *
+   * Create the client in the Shopify admin under
+   *   Settings -> Customer accounts -> Customer Account API
+   * and register `${publicBaseUrl}/api/auth/callback` as a callback URI.
+   * A public client needs only the id; a confidential client also sets the
+   * secret. UCP cannot do any of this — it has no authentication.
+   */
+  customerClientId: process.env.CUSTOMER_ACCOUNT_CLIENT_ID || '',
+  customerClientSecret: process.env.CUSTOMER_ACCOUNT_CLIENT_SECRET || '',
+
+  /** Both overridable so the flow can be exercised against a stand-in. */
+  customerAccountEndpoint: process.env.CUSTOMER_ACCOUNT_ENDPOINT || '',
+  oidcDiscoveryUrl: process.env.OIDC_DISCOVERY_URL || '',
+
+  /** Where Shopify redirects back to. Must match the registered callback URI. */
+  get publicBaseUrl() {
+    return process.env.PUBLIC_BASE_URL || `http://localhost:${this.port}`
+  },
+  get authCallbackUrl() {
+    return `${this.publicBaseUrl}/api/auth/callback`
+  },
+
+  /** Origin of the page hosting the widget, for the popup handshake. */
+  widgetOrigin: process.env.WIDGET_ORIGIN || 'http://localhost:5173',
+
   anthropicApiKey: required('ANTHROPIC_API_KEY'),
   model: process.env.ANTHROPIC_MODEL || 'claude-opus-5',
   maxTokens: Number(process.env.ANTHROPIC_MAX_TOKENS || 16000),

@@ -95,11 +95,72 @@ export const catalogConfig = {
     cartCard: true,
 
     /**
+     * 9. Show discount rows on the cart card — applied discounts (including
+     *    automatic store promotions) and rejected codes. Default: true.
+     */
+    discounts: true,
+
+    /**
      * 8. Show the checkout button on the cart card. Default: true.
      *    Links to Shopify's hosted checkout (the cart's continue_url) until the
      *    in-chat checkout flow is built.
      */
     checkoutButton: true,
+  },
+
+  /**
+   * Order history.
+   *
+   * Requires the buyer to sign in — UCP has no authentication and no way to
+   * list a buyer's orders, so this goes through the Customer Account API
+   * after a passwordless (email OTP) sign-in. Orders come back sorted newest
+   * first by Shopify itself (PROCESSED_AT desc).
+   */
+  orders: {
+    /** How many recent orders to fetch. Default: 10. */
+    historyLimit: 10,
+
+    /**
+     * Render orders as structured cards — order number, date, payment status,
+     * fulfilment status, total, tracking. Default: true.
+     * false = the agent lists them in plain text.
+     */
+    orderCard: true,
+
+    /** Show the items in each order on the card. Default: true. */
+    showLineItems: true,
+
+    /** Link through to Shopify's own order status page. Default: true. */
+    statusLink: true,
+  },
+
+  /**
+   * Voice input.
+   *
+   * Transcription runs in the browser via the Web Speech API — no audio is
+   * uploaded and no speech-to-text key is needed. That API is available in
+   * Chrome, Edge and Safari but NOT Firefox; where it is missing the mic
+   * button hides itself and typing still works.
+   */
+  voice: {
+    /** Show the microphone button at all. Default: true. */
+    enabled: true,
+
+    /**
+     * How long one press records for, in seconds. Default: 4.
+     * Recording stops automatically when this elapses; pressing the button
+     * again stops it early.
+     */
+    recordSeconds: 4,
+
+    /** Recognition language, BCP 47. */
+    language: 'en-US',
+
+    /**
+     * Send the transcript as soon as recording finishes. Default: true.
+     * false leaves the text in the input box for the buyer to edit first.
+     */
+    autoSubmit: true,
   },
 
   /**
@@ -146,13 +207,39 @@ export function validateCatalogConfig(config = catalogConfig) {
   if (!Number.isInteger(fetch.maxPages) || fetch.maxPages < 1) {
     errors.push('fetch.maxPages must be an integer >= 1')
   }
-  for (const key of ['productCard', 'carousel', 'variants', 'cartCard', 'checkoutButton']) {
+  for (const key of ['productCard', 'carousel', 'variants', 'cartCard', 'checkoutButton', 'discounts']) {
     if (typeof display[key] !== 'boolean') {
       errors.push(`display.${key} must be true or false`)
     }
   }
   if (typeof search.availableOnly !== 'boolean') {
     errors.push('search.availableOnly must be true or false')
+  }
+
+  const { orders } = config
+  if (!Number.isInteger(orders.historyLimit) || orders.historyLimit < 1) {
+    errors.push('orders.historyLimit must be an integer >= 1')
+  }
+  for (const key of ['orderCard', 'showLineItems', 'statusLink']) {
+    if (typeof orders[key] !== 'boolean') {
+      errors.push(`orders.${key} must be true or false`)
+    }
+  }
+
+  const { voice } = config
+  for (const key of ['enabled', 'autoSubmit']) {
+    if (typeof voice[key] !== 'boolean') {
+      errors.push(`voice.${key} must be true or false`)
+    }
+  }
+  if (typeof voice.recordSeconds !== 'number' || voice.recordSeconds <= 0) {
+    errors.push('voice.recordSeconds must be a number greater than 0')
+  }
+  if (voice.recordSeconds > 60) {
+    errors.push('voice.recordSeconds must be 60 or less')
+  }
+  if (typeof voice.language !== 'string' || !voice.language) {
+    errors.push('voice.language must be a BCP 47 tag, e.g. "en-US"')
   }
 
   if (errors.length > 0) {

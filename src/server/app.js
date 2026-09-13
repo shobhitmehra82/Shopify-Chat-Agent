@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { chatRouter } from './routes/chat.js'
 import { healthRouter } from './routes/health.js'
+import { authRouter } from './routes/auth.js'
 import { agentProfileRouter } from './routes/agentProfile.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -20,6 +21,7 @@ export function createApp() {
 
   // Everything the widget talks to. Vite proxies /api here in dev.
   app.use('/api', healthRouter)
+  app.use('/api', authRouter)
   app.use('/api', chatRouter)
 
   // Serve the built widget if `npm run build` has been run in web/.

@@ -11,6 +11,10 @@ export const agentProfileRouter = Router()
  * It must be reachable from the public internet — see env.agentProfileUrl.
  */
 agentProfileRouter.get('/.well-known/ucp-agent', (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300')
+  // Shopify honours this, and it re-fetches on every tool call, so some
+  // caching is worth having. Keep it short: a longer TTL means an edit to the
+  // profile silently keeps failing until the old copy expires, which is
+  // indistinguishable from the fix not working.
+  res.set('Cache-Control', 'public, max-age=60')
   res.json(buildAgentProfile())
 })

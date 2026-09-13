@@ -15,9 +15,16 @@ export function useChat({ greeting = '' } = {}) {
   const [messages, setMessages] = useState(initialMessages)
   const [isThinking, setIsThinking] = useState(false)
   const [status, setStatus] = useState('idle') // idle | ok | error
+  // Mirrored in a ref so in-flight requests never read a stale id.
+  const [sessionId, setSessionIdState] = useState(null)
 
   const sessionIdRef = useRef(null)
   const inFlightRef = useRef(null)
+
+  const setSessionId = useCallback((id) => {
+    sessionIdRef.current = id
+    setSessionIdState(id)
+  }, [])
 
   const sendMessage = useCallback(async (text) => {
     if (inFlightRef.current) return
@@ -35,7 +42,7 @@ export function useChat({ greeting = '' } = {}) {
         signal: controller.signal,
       })
 
-      sessionIdRef.current = data.sessionId
+      setSessionId(data.sessionId)
       setStatus('ok')
 
       setMessages((current) => [
@@ -55,16 +62,29 @@ export function useChat({ greeting = '' } = {}) {
       inFlightRef.current = null
       setIsThinking(false)
     }
-  }, [])
+  }, [setSessionId])
 
   const resetChat = useCallback(() => {
     inFlightRef.current?.abort()
     inFlightRef.current = null
-    sessionIdRef.current = null
+    setSessionId(null)
     setMessages(greeting ? [createMessage('assistant', greeting)] : [])
     setIsThinking(false)
     setStatus('idle')
-  }, [greeting])
+  }, [greeting, setSessionId])
 
-  return { messages, isThinking, status, sendMessage, resetChat }
+  const addSystemMessage = useCallback((text) => {
+    setMessages((current) => [...current, createMessage('system', text)])
+  }, [])
+
+  return {
+    messages,
+    isThinking,
+    status,
+    sessionId,
+    setSessionId,
+    sendMessage,
+    addSystemMessage,
+    resetChat,
+  }
 }

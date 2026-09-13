@@ -2,6 +2,11 @@ import { createApp } from './server/app.js'
 import { env, agentProfileIsLocal } from './config/env.js'
 import { validateCatalogConfig } from './config/catalog.config.js'
 import { sweepSessions } from './agent/state.js'
+import {
+  isConfigured,
+  callbackUrlIsAcceptable,
+  SETUP_HINT,
+} from './shopify/customerAuth.js'
 import { logger } from './utils/logger.js'
 
 validateCatalogConfig()
@@ -12,6 +17,20 @@ const server = app.listen(env.port, () => {
   logger.info(`Shopify chat agent listening on http://localhost:${env.port}`)
   logger.info(`UCP endpoint: ${env.ucpEndpoint}`)
   logger.info(`Agent profile: ${env.agentProfileUrl}`)
+
+  if (isConfigured()) {
+    logger.info(`Customer sign-in: enabled (callback ${env.authCallbackUrl})`)
+    if (!callbackUrlIsAcceptable()) {
+      logger.warn(
+        `Shopify rejects localhost and http:// callback URIs, so ${env.authCallbackUrl} ` +
+          'cannot be registered. Set PUBLIC_BASE_URL to an HTTPS tunnel (ngrok, ' +
+          'cloudflared) — the same tunnel the UCP agent profile needs.',
+      )
+    }
+  } else {
+    logger.info('Customer sign-in: disabled (CUSTOMER_ACCOUNT_CLIENT_ID not set)')
+    logger.info(`  ${SETUP_HINT}`)
+  }
 
   if (agentProfileIsLocal()) {
     logger.warn(

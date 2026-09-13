@@ -28,3 +28,29 @@ export function sendChatMessage({ message, sessionId, signal }) {
 export function fetchConfig() {
   return request('/config', { method: 'GET' })
 }
+
+/**
+ * Sign-in is passwordless: this only asks the server for the Shopify authorize
+ * URL to open in a popup. The buyer's email and one-time code are entered on
+ * Shopify's page, so no credential ever passes through here or through /chat.
+ */
+export function startAuth({ sessionId }) {
+  return request('/auth/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId }),
+  })
+}
+
+export function fetchAuthStatus(sessionId) {
+  const suffix = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
+  return request(`/auth/status${suffix}`, { method: 'GET' })
+}
+
+export function logoutCustomer({ sessionId }) {
+  return request('/auth/logout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId }),
+  })
+}

@@ -92,6 +92,66 @@ export async function removeFromCart(input = {}, config = catalogConfig, session
   return removeLine(cart, line, config, session)
 }
 
+/**
+ * Apply a discount code.
+ *
+ * Two things make this easy to get wrong:
+ *
+ *   - An invalid code is NOT an error. The store returns 200, echoes the code
+ *     back in `discounts.codes`, leaves `applied` empty, and adds a warning.
+ *     So success is decided by whether the code appears in `applied`, never by
+ *     the call succeeding.
+ *   - `codes` replaces the whole set, so an existing code must be re-sent or it
+ *     is dropped.
+ */
+export async function applyDiscountCode(input = {}, config = catalogConfig, session) {
+  const code = normaliseCode(input.code)
+  const cart = await requireCart(session)
+
+  const existing = currentCodes(cart)
+  if (existing.some((entry) => entry.toUpperCase() === code.toUpperCase())) {
+    const result = present(cart, config, session, { action: 'apply_discount_code', code })
+    result.forModel.note = `${code} is already on the cart.`
+    return result
+  }
+
+  const payload = await writeLines(session, config, toLines(cart), [...existing, code])
+  const applied = appliedCodes(payload)
+  const accepted = applied.some((entry) => entry.toUpperCase() === code.toUpperCase())
+
+  // Rejected codes must not linger in `codes`, or the next apply re-submits
+  // them and the buyer keeps seeing the same warning.
+  let finalPayload = payload
+  if (!accepted) {
+    finalPayload = await writeLines(session, config, toLines(payload), existing)
+  }
+
+  const result = present(finalPayload, config, session, {
+    action: 'apply_discount_code',
+    code,
+    accepted,
+  })
+
+  if (!accepted) {
+    result.forModel.error =
+      rejectionReason(payload, code) ||
+      `${code} was not accepted. It may be expired, not valid for these items, or mistyped.`
+  }
+  return result
+}
+
+export async function removeDiscountCode(input = {}, config = catalogConfig, session) {
+  const code = normaliseCode(input.code)
+  const cart = await requireCart(session)
+
+  const remaining = currentCodes(cart).filter(
+    (entry) => entry.toUpperCase() !== code.toUpperCase(),
+  )
+
+  const payload = await writeLines(session, config, toLines(cart), remaining)
+  return present(payload, config, session, { action: 'remove_discount_code', code })
+}
+
 export async function viewCart(input = {}, config = catalogConfig, session) {
   if (!session.cartId) return emptyCart(config)
   const payload = await readCart(session)
@@ -142,21 +202,26 @@ function toLines(cart) {
 /**
  * Writes the complete desired line list. update_cart replaces the array, so
  * whatever is not in `lines` is removed — including everything, when empty.
+ *
+ * `codes` is optional: discount codes PERSIST across a line-item update, so
+ * ordinary cart edits leave them alone by omitting the key. Pass an array only
+ * when deliberately changing them (it replaces the whole set).
  */
-function writeLines(session, config, lines) {
-  return callTool('update_cart', {
-    id: session.cartId,
-    cart: {
-      line_items: lines
-        .filter((line) => line.quantity > 0)
-        .map((line) =>
-          line.id
-            ? { id: line.id, item: { id: line.variantId }, quantity: line.quantity }
-            : { item: { id: line.variantId }, quantity: line.quantity },
-        ),
-      context: cartContext(config),
-    },
-  })
+function writeLines(session, config, lines, codes) {
+  const cart = {
+    line_items: lines
+      .filter((line) => line.quantity > 0)
+      .map((line) =>
+        line.id
+          ? { id: line.id, item: { id: line.variantId }, quantity: line.quantity }
+          : { item: { id: line.variantId }, quantity: line.quantity },
+      ),
+    context: cartContext(config),
+  }
+
+  if (codes) cart.discounts = { codes }
+
+  return callTool('update_cart', { id: session.cartId, cart })
 }
 
 async function removeLine(cart, line, config, session) {
@@ -214,6 +279,53 @@ function findLine(cart, { variantId, lineItemId }) {
   return null
 }
 
+/* ----------------------------------------------------------------- discounts */
+
+function normaliseCode(code) {
+  if (typeof code !== 'string' || !code.trim()) {
+    throw new UcpError('A discount code is required.', { code: 'bad_discount_code' })
+  }
+  return code.trim()
+}
+
+const currentCodes = (cart) => cart?.discounts?.codes || []
+
+/** Codes that actually took effect. Automatic discounts have no `code`. */
+const appliedCodes = (cart) =>
+  (cart?.discounts?.applied || []).map((entry) => entry.code).filter(Boolean)
+
+function rejectionReason(payload, code) {
+  const message = (payload?.messages || []).find((entry) =>
+    /discount/i.test(entry.code || entry.content || ''),
+  )
+  return message ? `${code}: ${message.content}` : null
+}
+
+/**
+ * Normalises applied discounts for display. Automatic discounts (store-wide
+ * promotions, "buy 2 get 1") arrive here too — they carry `automatic: true`
+ * and no code, and the buyer never types anything to get them.
+ */
+function presentDiscounts(payload, currency) {
+  const applied = (payload?.discounts?.applied || []).map((entry) => ({
+    code: entry.code || null,
+    title: entry.title || entry.code || 'Discount',
+    automatic: Boolean(entry.automatic) || !entry.code,
+    provisional: Boolean(entry.provisional),
+    amount: withFormatted({ amount: entry.amount?.amount ?? entry.amount, currency }),
+  }))
+
+  const appliedSet = new Set(
+    applied.map((entry) => (entry.code || '').toUpperCase()).filter(Boolean),
+  )
+  // Anything submitted that did not take effect.
+  const rejected = currentCodes(payload).filter(
+    (code) => !appliedSet.has(code.toUpperCase()),
+  )
+
+  return { applied, rejected, codes: currentCodes(payload) }
+}
+
 function requireVariantId(variantId) {
   if (typeof variantId !== 'string' || !variantId.includes('ProductVariant')) {
     throw new UcpError(
@@ -245,11 +357,19 @@ async function notInCart(cart, config, session) {
 
 function emptyCart(config, meta = {}) {
   const display = cartDisplay(config)
+  const noDiscounts = { applied: [], rejected: [], codes: [] }
   return {
-    forModel: { ...meta, empty: true, item_count: 0, line_items: [], totals: [] },
+    forModel: {
+      ...meta,
+      empty: true,
+      item_count: 0,
+      line_items: [],
+      totals: [],
+      discounts: { applied: [], rejected: [] },
+    },
     forUi: {
       type: 'cart',
-      cart: { empty: true, lineItems: [], totals: [], itemCount: 0 },
+      cart: { empty: true, lineItems: [], totals: [], itemCount: 0, discounts: noDiscounts },
       display,
     },
   }
@@ -290,6 +410,7 @@ function present(payload, config, session, meta = {}) {
 
   const itemCount = lineItems.reduce((sum, line) => sum + (line.quantity || 0), 0)
   const empty = lineItems.length === 0
+  const discounts = presentDiscounts(payload, currency)
 
   const cart = {
     id: payload.id,
@@ -298,6 +419,7 @@ function present(payload, config, session, meta = {}) {
     itemCount,
     lineItems,
     totals,
+    discounts,
     subtotal: totals.find((total) => total.type === 'subtotal') || null,
     total: totals.find((total) => total.type === 'total') || null,
     checkoutUrl: payload.continue_url || null,
@@ -319,6 +441,16 @@ function present(payload, config, session, meta = {}) {
         line_total: line.lineTotal?.formatted,
       })),
       totals: totals.map((total) => `${total.label}: ${total.formatted}`),
+      discounts: {
+        // `automatic: true` entries need no code — the store applied them.
+        applied: discounts.applied.map((entry) => ({
+          title: entry.title,
+          code: entry.code,
+          automatic: entry.automatic,
+          amount: entry.amount?.formatted,
+        })),
+        rejected: discounts.rejected,
+      },
       warnings,
       display_note: display.cartCard
         ? 'The cart is rendered as a card in the UI. Confirm the change in one short sentence; do not re-list every line and price.'
@@ -332,6 +464,7 @@ function cartDisplay(config) {
   return {
     cartCard: config.display.cartCard,
     checkoutButton: config.display.checkoutButton,
+    discounts: config.display.discounts,
   }
 }
 

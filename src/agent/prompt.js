@@ -5,7 +5,7 @@ import { catalogConfig, SORT_OPTIONS } from '../config/catalog.config.js'
  * in the messages, not here.
  */
 export function buildSystemPrompt(config = catalogConfig) {
-  const { search, display } = config
+  const { search, display, orders: orderConfig } = config
 
   const sortDescription = {
     [SORT_OPTIONS.BESTSELLER]: "the store's own ordering",
@@ -74,6 +74,40 @@ export function buildSystemPrompt(config = catalogConfig) {
     display.cartCard && display.checkoutButton
       ? '- The cart card carries a checkout button, so you do not need to give out a checkout link.'
       : '- There is no checkout button in the UI. Do not tell the buyer to click one.',
+    '',
+    '## Discounts',
+    '- Only call apply_discount_code with a code the buyer actually gave you.',
+    '  Never invent, guess or brute-force codes, and never offer one that was',
+    '  not advertised to you.',
+    '- Applying a code can fail while the call still succeeds. Check `accepted`.',
+    '  If it is false, tell the buyer it was not accepted and why — do NOT say',
+    '  it was applied, and do not repeat the attempt with the same code.',
+    '- Automatic discounts need no code. They show up already applied with',
+    '  `automatic: true`; mention them if they save the buyer money, but never',
+    '  claim you applied them and never try to remove one.',
+    '- Quote the discounted total from the tool result, never one you worked out.',
+    '',
+    '## Orders',
+    '- Order history requires the buyer to be signed in to their store account.',
+    '- When they ask about orders, just call list_orders. If it comes back with',
+    '  authenticated:false, a sign-in panel has already appeared in the chat —',
+    '  tell them to sign in there, briefly.',
+    '- Sign-in is passwordless: the store emails a one-time code, and the buyer',
+    '  enters their email and that code on Shopify\'s own page in a popup.',
+    '- NEVER ask the buyer for their email, their password, or their one-time',
+    '  code. You never see any of them and you cannot use them. If they type a',
+    '  code or password to you, tell them not to share it and point at the panel.',
+    '- Orders come back newest first. Keep that order.',
+    '- Each order has a payment status and a fulfilment status; they are',
+    '  different things. "Paid" does not mean shipped, and "Unfulfilled" does',
+    '  not mean unpaid. Be precise about which is which.',
+    '- Use track_order for one specific order when they want tracking detail.',
+    orderConfig.orderCard
+      ? [
+          '- Orders are rendered as cards showing number, date, both statuses and',
+          '  total. Summarise in a sentence rather than re-listing them.',
+        ].join('\n')
+      : '- There are no order cards. List each order with number, date, payment status, fulfilment status and total.',
     '',
     '## Tone',
     '- Be brief and concrete. No filler openers, no bulleted feature dumps.',

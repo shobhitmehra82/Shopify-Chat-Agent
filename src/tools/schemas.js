@@ -145,6 +145,44 @@ export const removeFromCartSchema = {
   },
 }
 
+export const applyDiscountCodeSchema = {
+  name: 'apply_discount_code',
+  description: [
+    'Apply a discount or promo code to the cart.',
+    'Only call this when the buyer actually gives you a code — never invent one,',
+    'never guess, and do not prompt for one unprompted.',
+    'The result tells you whether it was accepted: check `accepted`. A code can',
+    'be rejected for being expired, mistyped, or not valid for the items in the',
+    'cart, and the reason comes back in `error`.',
+    'Works for any Shopify discount type (order, product, collection, shipping).',
+  ].join(' '),
+  input_schema: {
+    type: 'object',
+    properties: {
+      code: {
+        type: 'string',
+        description: 'The discount code exactly as the buyer gave it. Case-insensitive.',
+      },
+    },
+    required: ['code'],
+    additionalProperties: false,
+  },
+}
+
+export const removeDiscountCodeSchema = {
+  name: 'remove_discount_code',
+  description:
+    'Remove a discount code the buyer previously applied. Automatic discounts cannot be removed — they are applied by the store, not by a code.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      code: { type: 'string', description: 'The code to remove.' },
+    },
+    required: ['code'],
+    additionalProperties: false,
+  },
+}
+
 export const viewCartSchema = {
   name: 'view_cart',
   description: [
@@ -162,11 +200,67 @@ export const clearCartSchema = {
   input_schema: { type: 'object', properties: {}, required: [], additionalProperties: false },
 }
 
+/* -------------------------------------------------------------------- orders */
+
+export const listOrdersSchema = {
+  name: 'list_orders',
+  description: [
+    "List the signed-in customer's recent orders, newest first, with order",
+    'number, date, payment status, fulfilment status and total.',
+    'Call this whenever the buyer asks about their orders, an order status, a',
+    'delivery, or a refund.',
+    'If they are not signed in this returns authenticated:false and a sign-in',
+    'panel appears in the UI — tell them to sign in there. NEVER ask the buyer',
+    'to type their password to you.',
+  ].join(' '),
+  input_schema: {
+    type: 'object',
+    properties: {
+      limit: {
+        type: 'integer',
+        minimum: 1,
+        description: 'How many recent orders to return. Omit for the configured default.',
+      },
+    },
+    required: [],
+    additionalProperties: false,
+  },
+}
+
+export const trackOrderSchema = {
+  name: 'track_order',
+  description: [
+    'Get the live detail for ONE specific order the customer has already been',
+    'shown — status, tracking numbers and items. Identify it by order name',
+    '(e.g. "#1042") or order id from list_orders.',
+    'Use list_orders first if you do not know which order they mean.',
+  ].join(' '),
+  input_schema: {
+    type: 'object',
+    properties: {
+      order_name: {
+        type: 'string',
+        description: 'The order name or number as shown to the buyer, e.g. "#1042".',
+      },
+      order_id: {
+        type: 'string',
+        description: 'The order id from a previous list_orders result.',
+      },
+    },
+    required: [],
+    additionalProperties: false,
+  },
+}
+
 export const toolSchemas = [
   searchCatalogSchema,
   addToCartSchema,
   updateCartItemSchema,
   removeFromCartSchema,
+  applyDiscountCodeSchema,
+  removeDiscountCodeSchema,
   viewCartSchema,
   clearCartSchema,
+  listOrdersSchema,
+  trackOrderSchema,
 ]

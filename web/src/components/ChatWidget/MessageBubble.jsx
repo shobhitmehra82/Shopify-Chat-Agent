@@ -1,9 +1,13 @@
 import ProductResults from './ProductResults.jsx'
 import CartCard from './CartCard.jsx'
+import OrderList from './OrderList.jsx'
+import AuthPrompt from './AuthPrompt.jsx'
 
 const RENDERERS = {
   products: ProductResults,
   cart: CartCard,
+  orders: OrderList,
+  auth_required: AuthPrompt,
 }
 
 export default function MessageBubble({ message, onAction }) {

@@ -6,7 +6,10 @@ import {
   removeFromCart,
   viewCart,
   clearCart,
+  applyDiscountCode,
+  removeDiscountCode,
 } from './cart.js'
+import { listOrders, trackOrder } from './order.js'
 
 /**
  * Tool registry. Each handler is (input, config, session) and returns
@@ -24,6 +27,10 @@ const handlers = {
   remove_from_cart: removeFromCart,
   view_cart: viewCart,
   clear_cart: clearCart,
+  apply_discount_code: applyDiscountCode,
+  remove_discount_code: removeDiscountCode,
+  list_orders: listOrders,
+  track_order: trackOrder,
 }
 
 export const tools = toolSchemas

@@ -54,6 +54,30 @@ export default function CartCard({ attachment }) {
         ))}
       </ul>
 
+      {display.discounts && cart.discounts?.applied?.length > 0 && (
+        <ul className="cw-cart__discounts">
+          {cart.discounts.applied.map((discount, index) => (
+            <li key={index} className="cw-cart__discount">
+              <span className="cw-cart__discount-tag">
+                {discount.automatic ? 'Automatic' : discount.code}
+              </span>
+              <span className="cw-cart__discount-title">{discount.title}</span>
+              {discount.amount?.formatted && (
+                <span className="cw-cart__discount-amount">
+                  −{discount.amount.formatted}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {display.discounts && cart.discounts?.rejected?.length > 0 && (
+        <p className="cw-cart__discount-rejected">
+          Not applied: {cart.discounts.rejected.join(', ')}
+        </p>
+      )}
+
       <dl className="cw-cart__totals">
         {cart.totals.map((total) => (
           <div

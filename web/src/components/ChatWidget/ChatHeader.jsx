@@ -4,7 +4,14 @@ const STATUS_TEXT = {
   error: 'Connection problem',
 }
 
-export default function ChatHeader({ storeName, status = 'idle', onReset, onClose }) {
+export default function ChatHeader({
+  storeName,
+  status = 'idle',
+  customerEmail,
+  onSignOut,
+  onReset,
+  onClose,
+}) {
   return (
     <header className="cw__header">
       <div className="cw__identity">
@@ -15,12 +22,22 @@ export default function ChatHeader({ storeName, status = 'idle', onReset, onClos
           <span className="cw__store">{storeName}</span>
           <span className="cw__status">
             <i className={`cw__status-dot cw__status-dot--${status}`} aria-hidden="true" />
-            {STATUS_TEXT[status] || STATUS_TEXT.idle}
+            {customerEmail || STATUS_TEXT[status] || STATUS_TEXT.idle}
           </span>
         </span>
       </div>
 
       <div className="cw__header-actions">
+        {customerEmail && (
+          <button
+            type="button"
+            className="cw__signout"
+            onClick={onSignOut}
+            title="Sign out of your store account"
+          >
+            Sign out
+          </button>
+        )}
         <button
           type="button"
           className="cw__icon-btn"
