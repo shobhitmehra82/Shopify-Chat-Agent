@@ -434,7 +434,6 @@ function present(payload, config, session, meta = {}) {
       currency,
       line_items: lineItems.map((line) => ({
         line_item_id: line.id,
-        variant_id: line.variantId,
         title: line.title,
         quantity: line.quantity,
         unit_price: line.unitPrice?.formatted,

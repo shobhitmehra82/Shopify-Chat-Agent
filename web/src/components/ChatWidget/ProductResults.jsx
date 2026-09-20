@@ -4,11 +4,17 @@ import ProductCard from './ProductCard.jsx'
 /**
  * The Add to cart button goes through the agent rather than a separate cart
  * endpoint, so there is one path that mutates the cart. The variant id is
- * included so the agent never has to guess which option was picked.
+ * included in `send` so the agent never has to guess which option was picked
+ * — but it's a raw GID, so `display` (what actually shows in the chat log)
+ * leaves it out.
  */
-function addToCartPhrase(product, variant) {
+function addToCartMessage(product, variant) {
   const name = variant?.title ? `${product.title} — ${variant.title}` : product.title
-  return `Add "${name}" to my cart (variant ${variant?.id || product.variants?.[0]?.id})`
+  const variantId = variant?.id || product.variants?.[0]?.id
+  return {
+    send: `Add "${name}" to my cart (variant ${variantId})`,
+    display: `Add "${name}" to my cart`,
+  }
 }
 
 /**
@@ -40,7 +46,7 @@ export default function ProductResults({ attachment, onAction }) {
             key={product.id}
             product={product}
             showVariants={display.variants}
-            onAddToCart={onAction && ((item, variant) => onAction(addToCartPhrase(item, variant)))}
+            onAddToCart={onAction && ((item, variant) => onAction(addToCartMessage(item, variant)))}
           />
         ))}
       </div>

@@ -26,10 +26,10 @@ export function useChat({ greeting = '' } = {}) {
     setSessionIdState(id)
   }, [])
 
-  const sendMessage = useCallback(async (text) => {
+  const sendMessage = useCallback(async (text, { displayText } = {}) => {
     if (inFlightRef.current) return
 
-    setMessages((current) => [...current, createMessage('user', text)])
+    setMessages((current) => [...current, createMessage('user', displayText ?? text)])
     setIsThinking(true)
 
     const controller = new AbortController()

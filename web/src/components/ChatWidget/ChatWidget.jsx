@@ -52,12 +52,15 @@ export default function ChatWidget({ storeName = 'Store', greeting = '', onOpenC
 
   /**
    * One action channel for everything rendered inside a message. A string is
-   * a message to send; an object is a UI command (opening the sign-in modal).
+   * a message to send; an object is either a UI command (opening the sign-in
+   * modal) or a { send, display } pair when the text sent to the agent
+   * (e.g. carrying a raw variant id) shouldn't be the text shown in the log.
    */
   const handleAction = useCallback(
     (action) => {
       if (typeof action === 'string') return sendMessage(action)
       if (action?.type === 'open-login') return setShowLogin(true)
+      if (action?.send) return sendMessage(action.send, { displayText: action.display })
     },
     [sendMessage],
   )
