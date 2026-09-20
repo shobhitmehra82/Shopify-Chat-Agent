@@ -11,11 +11,17 @@ import '../../styles/chat-widget.css'
 // Used until /api/config answers, and if it never does.
 const FALLBACK_VOICE = { enabled: true, recordSeconds: 4, language: 'en-US', autoSubmit: true }
 
-export default function ChatWidget({ storeName = 'Store', greeting = '' }) {
+export default function ChatWidget({ storeName = 'Store', greeting = '', onOpenChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const [voice, setVoice] = useState(FALLBACK_VOICE)
   const [showLogin, setShowLogin] = useState(false)
   const [customerEmail, setCustomerEmail] = useState(null)
+
+  // Lets an embedding page (e.g. the Shopify iframe snippet) resize its
+  // frame to fit the launcher button vs. the full panel.
+  useEffect(() => {
+    onOpenChange?.(isOpen)
+  }, [isOpen, onOpenChange])
 
   const {
     messages,

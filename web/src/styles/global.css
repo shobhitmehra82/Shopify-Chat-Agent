@@ -41,6 +41,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Embedded in the Shopify iframe: only the widget should be visible, so the
+   iframe's own background must not paint over the storefront behind it. */
+html:has(body.cw-embed),
+body.cw-embed {
+  background: transparent;
+}
+
 .host-page {
   min-height: 100vh;
   display: grid;

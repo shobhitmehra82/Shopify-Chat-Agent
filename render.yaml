@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: shopify-chat-agent
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      # Secrets — left blank here so Render prompts for them in its
+      # dashboard instead of them being committed to this file.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CUSTOMER_ACCOUNT_CLIENT_ID
+        sync: false
+      - key: CUSTOMER_ACCOUNT_CLIENT_SECRET
+        sync: false
+
+      # Non-secret config. PUBLIC_BASE_URL/WIDGET_ORIGIN depend on the URL
+      # Render assigns this service, so they're set after the first deploy.
+      - key: SHOPIFY_STORE_DOMAIN
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: WIDGET_ORIGIN
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5
+      - key: LOG_LEVEL
+        value: info
