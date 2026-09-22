@@ -14,6 +14,8 @@ services:
         sync: false
       - key: CUSTOMER_ACCOUNT_CLIENT_SECRET
         sync: false
+      - key: VOYAGE_API_KEY
+        sync: false
 
       # Non-secret config. PUBLIC_BASE_URL/WIDGET_ORIGIN depend on the URL
       # Render assigns this service, so they're set after the first deploy.
