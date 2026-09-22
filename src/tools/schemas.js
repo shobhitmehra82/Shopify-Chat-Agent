@@ -252,6 +252,30 @@ export const trackOrderSchema = {
   },
 }
 
+/* ------------------------------------------------------------------ policies */
+
+export const searchStorePoliciesSchema = {
+  name: 'search_store_policies',
+  description: [
+    "Search the store's policy pages (shipping, returns, privacy, warranty)",
+    'for text relevant to the buyer\'s question. Use this for any question',
+    'about policy — never answer one from memory.',
+    'If it returns found:false, tell the buyer plainly that the policy pages',
+    'do not cover that. Never invent policy detail that was not returned here.',
+  ].join(' '),
+  input_schema: {
+    type: 'object',
+    properties: {
+      question: {
+        type: 'string',
+        description: "The buyer's question, in their own words.",
+      },
+    },
+    required: ['question'],
+    additionalProperties: false,
+  },
+}
+
 export const toolSchemas = [
   searchCatalogSchema,
   addToCartSchema,
@@ -263,4 +287,5 @@ export const toolSchemas = [
   clearCartSchema,
   listOrdersSchema,
   trackOrderSchema,
+  searchStorePoliciesSchema,
 ]

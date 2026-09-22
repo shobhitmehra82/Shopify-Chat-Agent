@@ -7,9 +7,20 @@ import {
   callbackUrlIsAcceptable,
   SETUP_HINT,
 } from './shopify/customerAuth.js'
+import { buildPolicyIndex } from './rag/policyIndex.js'
 import { logger } from './utils/logger.js'
 
 validateCatalogConfig()
+
+// Best-effort: a Voyage outage or missing key must not stop the server from
+// starting — search_store_policies just reports itself unavailable instead.
+try {
+  await buildPolicyIndex()
+} catch (error) {
+  logger.warn('policy index build failed, search_store_policies stays disabled', {
+    message: error.message,
+  })
+}
 
 const app = createApp()
 

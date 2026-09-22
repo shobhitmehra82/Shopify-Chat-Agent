@@ -10,6 +10,7 @@ import {
   removeDiscountCode,
 } from './cart.js'
 import { listOrders, trackOrder } from './order.js'
+import { searchStorePolicies } from './policies.js'
 
 /**
  * Tool registry. Each handler is (input, config, session) and returns
@@ -31,6 +32,7 @@ const handlers = {
   remove_discount_code: removeDiscountCode,
   list_orders: listOrders,
   track_order: trackOrder,
+  search_store_policies: searchStorePolicies,
 }
 
 export const tools = toolSchemas

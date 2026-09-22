@@ -65,6 +65,13 @@ export const env = {
   model: process.env.ANTHROPIC_MODEL || 'claude-opus-5',
   maxTokens: Number(process.env.ANTHROPIC_MAX_TOKENS || 16000),
 
+  /**
+   * Powers search_store_policies (RAG over the store's policy pages).
+   * Optional: without it, buildPolicyIndex() logs a warning and the tool
+   * reports itself unavailable instead of the server failing to start.
+   */
+  voyageApiKey: process.env.VOYAGE_API_KEY || '',
+
   /** Safety rail on the tool-use loop. */
   maxToolIterations: Number(process.env.MAX_TOOL_ITERATIONS || 8),
 

@@ -109,6 +109,13 @@ export function buildSystemPrompt(config = catalogConfig) {
         ].join('\n')
       : '- There are no order cards. List each order with number, date, payment status, fulfilment status and total.',
     '',
+    '## Store policies',
+    '- Shipping, returns, privacy and warranty questions must go through',
+    '  search_store_policies — never answer one from memory, even if it seems',
+    '  obvious.',
+    '- If it comes back with found:false, tell the buyer plainly that the',
+    '  policy pages do not cover that. Do not guess or improvise an answer.',
+    '',
     '## Tone',
     '- Be brief and concrete. No filler openers, no bulleted feature dumps.',
     '- Quote prices exactly as the tool returned them, currency symbol included.',
